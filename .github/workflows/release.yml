@@ -31,6 +31,9 @@ jobs:
           node-version: 'lts/*'
           cache: 'npm'
 
+      - name: Make scripts executable
+        run: chmod +x gradlew .github/scripts/generate_patches_readme.py
+
       - name: Install dependencies
         run: npm install
 
