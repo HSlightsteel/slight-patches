@@ -13,14 +13,21 @@ Click here to add these patches to Morphe: https://morphe.software/add-source?gi
 ## 🩹 Patches list
 
 <!-- PATCHES_START EXPANDED -->
+> **[v1.0.0](https://github.com/HSlightsteel/slight-patches/releases/tag/v1.0.0)**&nbsp;&nbsp;•&nbsp;&nbsp;`main`&nbsp;&nbsp;•&nbsp;&nbsp;1 patches total
+<details open>
+<summary>📦 AT4K Launcher&nbsp;&nbsp;•&nbsp;&nbsp;1 patch</summary>
+<br>
 
-#### Included Patches
+**🎯 Supported versions:**
 
-- **AT4K Launcher** (`com.overdevs.at4k`)
-  - **Unlock Premium**: Unlocks AT4K Launcher's premium features (wallpapers, extra apps per row, widgets) without requiring purchase or license activation.
-  - **Disable License Check** (dependency): Bypasses the PairIP Google Play license verification to allow running modified/re-signed builds.
+| 1.1 |
+| :---: |
 
-&nbsp;
+| 💊&nbsp;Patch | 📜&nbsp;Description | ⚙️&nbsp;Options |
+|----------|----------------|-----------|
+| [Unlock Premium](#unlock-premium) | Unlocks AT4K Launcher's premium features without paying, like more apps per row and the premium wallpaper options. It all runs on the device, so nothing stays locked. |  |
+
+</details>
 
 <!-- PATCHES_END -->
 
