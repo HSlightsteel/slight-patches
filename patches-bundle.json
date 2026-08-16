@@ -1,7 +1,7 @@
 {
-  "created_at": "2026-08-16T08:58:41",
-  "description": "## [1.1.0-dev.3](https://github.com/HSlightsteel/slight-patches/compare/v1.1.0-dev.2...v1.1.0-dev.3) (2026-08-16)\n\n### 🐛 Bug Fixes\n\n* **sparkle:** neutralize startup_time anti-tamper modulo traps and hook LibUtils strings ([68652c3](https://github.com/HSlightsteel/slight-patches/commit/68652c31f543c82c37ed680aa7c3744608b7ab78))",
-  "download_url": "https://github.com/HSlightsteel/slight-patches/releases/download/v1.1.0-dev.3/patches-1.1.0-dev.3.mpp",
+  "created_at": "2026-08-16T09:05:30",
+  "description": "## [1.1.0-dev.4](https://github.com/HSlightsteel/slight-patches/compare/v1.1.0-dev.3...v1.1.0-dev.4) (2026-08-16)\n\n### 🐛 Bug Fixes\n\n* **sparkle:** resolve app crash at launch by removing invalid register injection and safely neutralizing qh.d billing queries ([697f7b5](https://github.com/HSlightsteel/slight-patches/commit/697f7b53158ab6b42fb31f8ed41660fde661294e))",
+  "download_url": "https://github.com/HSlightsteel/slight-patches/releases/download/v1.1.0-dev.4/patches-1.1.0-dev.4.mpp",
   "signature_download_url": "",
-  "version": "1.1.0-dev.3"
+  "version": "1.1.0-dev.4"
 }

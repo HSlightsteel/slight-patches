@@ -1,3 +1,9 @@
+## [1.1.0-dev.4](https://github.com/HSlightsteel/slight-patches/compare/v1.1.0-dev.3...v1.1.0-dev.4) (2026-08-16)
+
+### 🐛 Bug Fixes
+
+* **sparkle:** resolve app crash at launch by removing invalid register injection and safely neutralizing qh.d billing queries ([697f7b5](https://github.com/HSlightsteel/slight-patches/commit/697f7b53158ab6b42fb31f8ed41660fde661294e))
+
 ## [1.1.0-dev.3](https://github.com/HSlightsteel/slight-patches/compare/v1.1.0-dev.2...v1.1.0-dev.3) (2026-08-16)
 
 ### 🐛 Bug Fixes
