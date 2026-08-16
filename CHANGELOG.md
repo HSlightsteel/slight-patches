@@ -1,3 +1,9 @@
+## [1.1.0-dev.6](https://github.com/HSlightsteel/slight-patches/compare/v1.1.0-dev.5...v1.1.0-dev.6) (2026-08-16)
+
+### 🐛 Bug Fixes
+
+* **sparkle:** enable Add Source and Add XMLTV EPG by forcing sync_internal in SetupActivity fragments ([be5e550](https://github.com/HSlightsteel/slight-patches/commit/be5e5508d27defaff40f3ef6c81fcbfbed18376f))
+
 ## [1.1.0-dev.5](https://github.com/HSlightsteel/slight-patches/compare/v1.1.0-dev.4...v1.1.0-dev.5) (2026-08-16)
 
 ### 🐛 Bug Fixes
