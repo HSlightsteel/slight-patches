@@ -69,10 +69,11 @@ val unlockPlusPatch = bytecodePatch(
 
         syncMethod.addInstructions(0, "const/16 p1, 0xff")
 
-        // 3. Patch LibUtils native bridges (LibUtils.h, LibUtils.x, LibUtils.w, and feature getters).
+        // 3. Patch LibUtils native bridges (LibUtils.h, LibUtils.x, LibUtils.w, feature getters, and string constants).
         // - LibUtils.h: returns calculated bitmask from purchases; forced to 0xFF (255).
-        // - LibUtils.x: APK signature check executed on startup; neutered with return-void.
+        // - LibUtils.x: seeds valid startup_time (0L) in SharedPreferences to prevent background anti-tamper sabotage.
         // - LibUtils.w: anti-debug watchdog check; forced to false (0).
+        // - Feature bit & string getters: hooked in bytecode for full offline and JNI stability.
         val libUtilsClass = classDefByStrings("libutilsJNI")
             .firstOrNull()
             ?: mutableClassDefByOrNull("Lse/hedekonsult/utils/LibUtils;")
@@ -92,12 +93,29 @@ val unlockPlusPatch = bytecodePatch(
             """,
         )
 
-        // LibUtils.x(MainActivity) -> void (neutralize startup signature check)
+        // LibUtils.x(MainActivity) -> void: Seeds valid startup_time (0L) in SharedPreferences.
+        // If startup_time is uninitialized or not a multiple of 10 (% 10 != 0), TaskReceiver and
+        // SetupActivity trigger anti-tamper routines that periodically wipe database/channel files and
+        // launch background setup intents, causing constant crashes during playback.
         mutableLibUtils.methods.firstOrNull { method: Method ->
             method.name == "x" &&
                 method.returnType == "V" &&
                 AccessFlags.STATIC.isSet(method.accessFlags)
-        }?.addInstructions(0, "return-void")
+        }?.addInstructions(
+            0,
+            """
+                invoke-static {p0}, Landroid/preference/PreferenceManager;->getDefaultSharedPreferences(Landroid/content/Context;)Landroid/content/SharedPreferences;
+                move-result-object v0
+                invoke-interface {v0}, Landroid/content/SharedPreferences;->edit()Landroid/content/SharedPreferences${'$'}Editor;
+                move-result-object v0
+                const-string v1, "startup_time"
+                const-wide/16 v2, 0x0
+                invoke-interface {v0, v1, v2, v3}, Landroid/content/SharedPreferences${'$'}Editor;->putLong(Ljava/lang/String;J)Landroid/content/SharedPreferences${'$'}Editor;
+                move-result-object v0
+                invoke-interface {v0}, Landroid/content/SharedPreferences${'$'}Editor;->apply()V
+                return-void
+            """,
+        )
 
         // LibUtils.w() -> boolean (neutralize anti-debug check)
         mutableLibUtils.methods.firstOrNull { method: Method ->
@@ -109,6 +127,19 @@ val unlockPlusPatch = bytecodePatch(
             0,
             """
                 const/4 v0, 0x0
+                return v0
+            """,
+        )
+
+        // LibUtils.y(Context, String, String) -> boolean (purchase signature verify bypass)
+        mutableLibUtils.methods.firstOrNull { method: Method ->
+            method.name == "y" &&
+                method.returnType == "Z" &&
+                AccessFlags.STATIC.isSet(method.accessFlags)
+        }?.addInstructions(
+            0,
+            """
+                const/4 v0, 0x1
                 return v0
             """,
         )
@@ -139,5 +170,60 @@ val unlockPlusPatch = bytecodePatch(
                 """,
             )
         }
+
+        // Product SKU and name string getters in LibUtils:
+        val stringGetters = mapOf(
+            "i" to "Plus Subscription",
+            "j" to "Plus",
+            "k" to "sparkle_contribute_support_1",
+            "l" to "sparkle_contribute_support_2",
+            "m" to "sparkle_contribute_support_3",
+            "n" to "sparkle_plus",
+            "o" to "sparkle_plus_connected",
+            "r" to "sparkle_plus_subscription_month",
+            "s" to "sparkle_plus_subscription_year",
+            "t" to "Shared Plus",
+        )
+
+        for ((methodName, stringVal) in stringGetters) {
+            mutableLibUtils.methods.firstOrNull { method: Method ->
+                method.name == methodName &&
+                    method.returnType == "Ljava/lang/String;" &&
+                    method.parameterTypes.isEmpty() &&
+                    AccessFlags.STATIC.isSet(method.accessFlags)
+            }?.addInstructions(
+                0,
+                """
+                    const-string v0, "$stringVal"
+                    return-object v0
+                """,
+            )
+        }
+
+        // 4. Initialize startup_time in BaseApplication.onCreate().
+        // Ensures startup_time (0L) is saved before any background receiver (e.g. TaskReceiver) or
+        // service can execute, preventing uninitialized -1L modulo traps on cold start or boot.
+        val baseApplication = mutableClassDefByOrNull("Lse/hedekonsult/tvlibrary/core/common/BaseApplication;")
+            ?: classDefByStrings("allow_incompatible")
+                .firstOrNull()
+                ?.let { mutableClassDefBy(it) }
+        baseApplication?.methods?.firstOrNull { method: Method ->
+            method.name == "onCreate" &&
+                method.returnType == "V" &&
+                method.parameterTypes.isEmpty()
+        }?.addInstructions(
+            0,
+            """
+                invoke-static {p0}, Landroid/preference/PreferenceManager;->getDefaultSharedPreferences(Landroid/content/Context;)Landroid/content/SharedPreferences;
+                move-result-object v0
+                invoke-interface {v0}, Landroid/content/SharedPreferences;->edit()Landroid/content/SharedPreferences${'$'}Editor;
+                move-result-object v0
+                const-string v1, "startup_time"
+                const-wide/16 v2, 0x0
+                invoke-interface {v0, v1, v2, v3}, Landroid/content/SharedPreferences${'$'}Editor;->putLong(Ljava/lang/String;J)Landroid/content/SharedPreferences${'$'}Editor;
+                move-result-object v0
+                invoke-interface {v0}, Landroid/content/SharedPreferences${'$'}Editor;->apply()V
+            """,
+        )
     }
 }
