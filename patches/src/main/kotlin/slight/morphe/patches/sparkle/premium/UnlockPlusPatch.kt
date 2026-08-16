@@ -182,29 +182,5 @@ val unlockPlusPatch = bytecodePatch(
                 """,
             )
         }
-
-        // 4. Neutralize background Google Play Billing & Firebase queries in qh.d.
-        // MainActivity.onResume initializes qh.d which continuously queries BillingClient and Firebase
-        // in background threads. On modified APKs or devices without Play Store services, this triggers
-        // billing disconnections and background worker crashes. Neutering i(Context) and f(String, String)
-        // prevents all billing crash loops while MainActivity.H distributes 0xFF directly.
-        val billingManagerClass = classDefByStrings("Pending purchases for one-time products must be supported.")
-            .firstOrNull()
-            ?: mutableClassDefByOrNull("Lqh/d;")
-
-        if (billingManagerClass != null) {
-            val mutableBillingManager = mutableClassDefBy(billingManagerClass)
-            mutableBillingManager.methods.firstOrNull { method: Method ->
-                method.name == "i" &&
-                    method.returnType == "V" &&
-                    method.parameterTypes == listOf("Landroid/content/Context;")
-            }?.addInstructions(0, "return-void")
-
-            mutableBillingManager.methods.firstOrNull { method: Method ->
-                method.name == "f" &&
-                    method.returnType == "V" &&
-                    method.parameterTypes == listOf("Ljava/lang/String;", "Ljava/lang/String;")
-            }?.addInstructions(0, "return-void")
-        }
     }
 }
