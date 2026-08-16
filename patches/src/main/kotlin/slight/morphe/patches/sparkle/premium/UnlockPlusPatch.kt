@@ -182,5 +182,75 @@ val unlockPlusPatch = bytecodePatch(
                 """,
             )
         }
+
+        // 4. Force sync_internal in SetupActivity fragments (Add Source, Edit Source, Add XMLTV EPG).
+        // SetupActivity does not use ph.b0.d for its UI buttons; it tests (this.sync_internal & LibUtils.f()) == LibUtils.f()
+        // directly against internal fields on its fragment instances. When Google Play Billing returns no purchases
+        // on a sideloaded APK, these fields remain 0, causing "Add new source" and "Add XMLTV EPG" to be grayed out
+        // with "(Purchase Sparkle TV Plus)".
+        // We inject `this.sync_field = 0xFF` (255) at the start of their UI rendering methods (`q1()V` and `S1(...)V`).
+        
+        // SetupActivity$j: Sources setup overview fragment ("Add new source")
+        val setupJClass = mutableClassDefByOrNull("Lse/hedekonsult/tvlibrary/core/ui/SetupActivity\$j;")
+            ?: classDefByStrings("setup_sources")
+                .firstOrNull()
+                ?.let { mutableClassDefBy(it) }
+
+        setupJClass?.methods?.firstOrNull { method: Method ->
+            method.name == "q1" &&
+                method.returnType == "V" &&
+                method.parameterTypes.isEmpty()
+        }?.let { method ->
+            val intFieldName = setupJClass.fields.firstOrNull { it.type == "I" }?.name ?: "r0"
+            method.addInstructions(
+                0,
+                """
+                    const/16 v0, 0xff
+                    iput v0, p0, ${setupJClass.type}->$intFieldName:I
+                """,
+            )
+        }
+
+        // SetupActivity$d: Source EPG settings fragment ("Add XMLTV EPG")
+        val setupDClass = mutableClassDefByOrNull("Lse/hedekonsult/tvlibrary/core/ui/SetupActivity\$d;")
+            ?: classDefByStrings("setup_input_settings_epg")
+                .firstOrNull()
+                ?.let { mutableClassDefBy(it) }
+
+        setupDClass?.methods?.firstOrNull { method: Method ->
+            method.name == "q1" &&
+                method.returnType == "V" &&
+                method.parameterTypes.isEmpty()
+        }?.let { method ->
+            val intFieldName = setupDClass.fields.firstOrNull { it.type == "I" }?.name ?: "q0"
+            method.addInstructions(
+                0,
+                """
+                    const/16 v0, 0xff
+                    iput v0, p0, ${setupDClass.type}->$intFieldName:I
+                """,
+            )
+        }
+
+        // SetupActivity$a: Add Source type selection fragment
+        val setupAClass = mutableClassDefByOrNull("Lse/hedekonsult/tvlibrary/core/ui/SetupActivity\$a;")
+            ?: classDefByStrings("setup_source_add_description")
+                .firstOrNull()
+                ?.let { mutableClassDefBy(it) }
+
+        setupAClass?.methods?.firstOrNull { method: Method ->
+            method.name == "S1" &&
+                method.returnType == "V" &&
+                method.parameterTypes == listOf("Ljava/util/ArrayList;")
+        }?.let { method ->
+            val intFieldName = setupAClass.fields.firstOrNull { it.type == "I" }?.name ?: "q0"
+            method.addInstructions(
+                0,
+                """
+                    const/16 v0, 0xff
+                    iput v0, p0, ${setupAClass.type}->$intFieldName:I
+                """,
+            )
+        }
     }
 }
