@@ -1,3 +1,9 @@
+## [1.1.0-dev.3](https://github.com/HSlightsteel/slight-patches/compare/v1.1.0-dev.2...v1.1.0-dev.3) (2026-08-16)
+
+### 🐛 Bug Fixes
+
+* **sparkle:** neutralize startup_time anti-tamper modulo traps and hook LibUtils strings ([68652c3](https://github.com/HSlightsteel/slight-patches/commit/68652c31f543c82c37ed680aa7c3744608b7ab78))
+
 ## [1.1.0-dev.2](https://github.com/HSlightsteel/slight-patches/compare/v1.1.0-dev.1...v1.1.0-dev.2) (2026-08-16)
 
 ### 🐛 Bug Fixes

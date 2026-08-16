@@ -1,7 +1,7 @@
 {
-  "created_at": "2026-08-16T08:46:30",
-  "description": "## [1.1.0-dev.2](https://github.com/HSlightsteel/slight-patches/compare/v1.1.0-dev.1...v1.1.0-dev.2) (2026-08-16)\n\n### 🐛 Bug Fixes\n\n* **sparkle:** resolve player engine stall and live playback freeze by distributing sync_internal as 0xFF ([55bc34d](https://github.com/HSlightsteel/slight-patches/commit/55bc34d3e1c3545b045382fba9110011284c643a))",
-  "download_url": "https://github.com/HSlightsteel/slight-patches/releases/download/v1.1.0-dev.2/patches-1.1.0-dev.2.mpp",
+  "created_at": "2026-08-16T08:58:41",
+  "description": "## [1.1.0-dev.3](https://github.com/HSlightsteel/slight-patches/compare/v1.1.0-dev.2...v1.1.0-dev.3) (2026-08-16)\n\n### 🐛 Bug Fixes\n\n* **sparkle:** neutralize startup_time anti-tamper modulo traps and hook LibUtils strings ([68652c3](https://github.com/HSlightsteel/slight-patches/commit/68652c31f543c82c37ed680aa7c3744608b7ab78))",
+  "download_url": "https://github.com/HSlightsteel/slight-patches/releases/download/v1.1.0-dev.3/patches-1.1.0-dev.3.mpp",
   "signature_download_url": "",
-  "version": "1.1.0-dev.2"
+  "version": "1.1.0-dev.3"
 }
