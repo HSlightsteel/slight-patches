@@ -49,15 +49,27 @@ val unlockPlusPatch = bytecodePatch(
             """,
         )
 
-        // 2. Force sync_internal distribution in MainActivity.H(int).
-        // MainActivity receives the billing bitmask and propagates it to Intent extras, Fragment
-        // bundles, and background broadcast services (TaskReceiver, EpgSyncService). Overriding
-        // the parameter register p1 to 0xFF (255) ensures all components receive all feature flags
+        // 1b. Bypass b0.G(Context)Z device compatibility check.
+        // MainActivity.onStart() calls b0.G(this) and if it returns false, the app launches
+        // IncompatibleDeviceActivity and calls finish(), killing the app before any UI renders.
+        // This is a safety net for non-standard TV configurations or emulators.
+        mutableGatekeeperClass.methods.firstOrNull { method: Method ->
+            method.name == "G" &&
+                method.returnType == "Z" &&
+                method.parameterTypes == listOf("Landroid/content/Context;") &&
+                AccessFlags.STATIC.isSet(method.accessFlags)
+        }?.addInstructions(
+            0,
+            """
+                const/4 v0, 0x1
+                return v0
+            """,
+        )
+
+        // 2. Patch MainActivity:
+        // 2a. Force sync_internal distribution in MainActivity.H(int).
+        // Overriding parameter p1 to 0xFF (255) ensures all components receive all feature flags
         // while remaining a valid positive integer (f24955s >= 0).
-        // CRITICAL: Setting p1 to -1 (negative) broke the player engine (yh.q), because yh.q
-        // explicitly gates video playback and state transitions behind `if (wVar.f24955s >= 0)`.
-        // Passing -1 caused yh.q to enter an infinite 0ms spinning loop, freezing UI, crashing,
-        // and completely preventing live channels from playing.
         val mainActivity = mutableClassDefByOrNull("Lse/hedekonsult/sparkle/MainActivity;")
             ?: throw PatchException("Sparkle: MainActivity not found.")
 
@@ -69,18 +81,53 @@ val unlockPlusPatch = bytecodePatch(
 
         syncMethod.addInstructions(0, "const/16 p1, 0xff")
 
-        // 3. Patch LibUtils native bridges (LibUtils.h, LibUtils.x, LibUtils.w, feature getters, and string constants).
-        // - LibUtils.h: returns calculated bitmask from purchases; forced to 0xFF (255).
-        // - LibUtils.x: seeds valid startup_time (0L) in SharedPreferences to prevent background anti-tamper sabotage.
-        // - LibUtils.w: anti-debug watchdog check; forced to false (0).
-        // - Feature bit & string getters: hooked in bytecode for full offline and JNI stability.
+        // 2b. Seed startup_time (1000L) in SharedPreferences at MainActivity.onCreate(Bundle).
+        // MainActivity.onCreate has a large register frame (10+ registers), so using v0..v3 is 100% safe
+        // and avoids the VerifyError register overflow that occurs if injected into small 1-register methods.
+        // Setting startup_time = 1000L (1000 % 10 == 0) completely neutralizes the background anti-tamper
+        // deletion traps in TaskReceiver (line 197), SetupActivity (line 2944), and e0 (line 43).
+        val mainActivityOnCreate = mainActivity.methods.firstOrNull { method: Method ->
+            method.name == "onCreate" &&
+                method.returnType == "V" &&
+                method.parameterTypes == listOf("Landroid/os/Bundle;")
+        } ?: throw PatchException("Sparkle: MainActivity.onCreate(Bundle) not found.")
+
+        mainActivityOnCreate.addInstructions(
+            0,
+            """
+                invoke-static {p0}, Landroid/preference/PreferenceManager;->getDefaultSharedPreferences(Landroid/content/Context;)Landroid/content/SharedPreferences;
+                move-result-object v0
+                invoke-interface {v0}, Landroid/content/SharedPreferences;->edit()Landroid/content/SharedPreferences${'$'}Editor;
+                move-result-object v0
+                const-string v1, "startup_time"
+                const-wide/16 v2, 0x3e8
+                invoke-interface {v0, v1, v2, v3}, Landroid/content/SharedPreferences${'$'}Editor;->putLong(Ljava/lang/String;J)Landroid/content/SharedPreferences${'$'}Editor;
+                move-result-object v0
+                invoke-interface {v0}, Landroid/content/SharedPreferences${'$'}Editor;->apply()V
+            """,
+        )
+
+        // 3. Patch LibUtils native bridges (LibUtils.x, LibUtils.h, LibUtils.w, feature getters, and string constants).
         val libUtilsClass = classDefByStrings("libutilsJNI")
             .firstOrNull()
             ?: mutableClassDefByOrNull("Lse/hedekonsult/utils/LibUtils;")
             ?: throw PatchException("Sparkle: LibUtils class not found.")
         val mutableLibUtils = mutableClassDefBy(libUtilsClass)
 
-        // LibUtils.h(Context, ArrayList) -> int (force return 0xFF = 255)
+        // 3a. LibUtils.x(MainActivity) -> void: Simple return-void.
+        // Uses 0 registers and instantly bypasses calling the native xpoe32871a method.
+        mutableLibUtils.methods.firstOrNull { method: Method ->
+            method.name == "x" &&
+                method.returnType == "V" &&
+                AccessFlags.STATIC.isSet(method.accessFlags)
+        }?.addInstructions(
+            0,
+            """
+                return-void
+            """,
+        )
+
+        // 3b. LibUtils.h(Context, ArrayList) -> int (force return 0xFF = 255)
         mutableLibUtils.methods.firstOrNull { method: Method ->
             method.name == "h" &&
                 method.returnType == "I" &&
@@ -93,14 +140,7 @@ val unlockPlusPatch = bytecodePatch(
             """,
         )
 
-        // LibUtils.x(MainActivity) -> void: Neutralize startup APK signature check.
-        mutableLibUtils.methods.firstOrNull { method: Method ->
-            method.name == "x" &&
-                method.returnType == "V" &&
-                AccessFlags.STATIC.isSet(method.accessFlags)
-        }?.addInstructions(0, "return-void")
-
-        // LibUtils.w() -> boolean (neutralize anti-debug check)
+        // 3c. LibUtils.w() -> boolean (neutralize anti-debug check)
         mutableLibUtils.methods.firstOrNull { method: Method ->
             method.name == "w" &&
                 method.returnType == "Z" &&
@@ -114,7 +154,7 @@ val unlockPlusPatch = bytecodePatch(
             """,
         )
 
-        // LibUtils.y(Context, String, String) -> boolean (purchase signature verify bypass)
+        // 3d. LibUtils.y(Context, String, String) -> boolean (purchase signature verify bypass)
         mutableLibUtils.methods.firstOrNull { method: Method ->
             method.name == "y" &&
                 method.returnType == "Z" &&
@@ -183,13 +223,34 @@ val unlockPlusPatch = bytecodePatch(
             )
         }
 
+        // Native string getters p(Context) and q(Context) hooked for resilience:
+        mutableLibUtils.methods.firstOrNull { method: Method ->
+            method.name == "p" &&
+                method.returnType == "Ljava/lang/String;" &&
+                method.parameterTypes == listOf("Landroid/content/Context;") &&
+                AccessFlags.STATIC.isSet(method.accessFlags)
+        }?.addInstructions(
+            0,
+            """
+                const-string v0, ""
+                return-object v0
+            """,
+        )
+
+        mutableLibUtils.methods.firstOrNull { method: Method ->
+            method.name == "q" &&
+                method.returnType == "Ljava/lang/String;" &&
+                method.parameterTypes == listOf("Landroid/content/Context;") &&
+                AccessFlags.STATIC.isSet(method.accessFlags)
+        }?.addInstructions(
+            0,
+            """
+                const-string v0, ""
+                return-object v0
+            """,
+        )
+
         // 4. Force sync_internal in SetupActivity fragments (Add Source, Edit Source, Add XMLTV EPG).
-        // SetupActivity does not use ph.b0.d for its UI buttons; it tests (this.sync_internal & LibUtils.f()) == LibUtils.f()
-        // directly against internal fields on its fragment instances. When Google Play Billing returns no purchases
-        // on a sideloaded APK, these fields remain 0, causing "Add new source" and "Add XMLTV EPG" to be grayed out
-        // with "(Purchase Sparkle TV Plus)".
-        // We inject `this.sync_field = 0xFF` (255) at the start of their UI rendering methods (`q1()V` and `S1(...)V`).
-        
         // SetupActivity$j: Sources setup overview fragment ("Add new source")
         val setupJClass = mutableClassDefByOrNull("Lse/hedekonsult/tvlibrary/core/ui/SetupActivity\$j;")
             ?: classDefByStrings("setup_sources")
