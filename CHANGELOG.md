@@ -1,3 +1,9 @@
+## [1.1.0-dev.1](https://github.com/HSlightsteel/slight-patches/compare/v1.0.0...v1.1.0-dev.1) (2026-08-16)
+
+### ✨ New Features
+
+* add Sparkle TV v2.3.1 Plus unlock patch ([a7b1822](https://github.com/HSlightsteel/slight-patches/commit/a7b18226c830d04c13ca21acb72938d6fea352ad))
+
 ## 1.0.0 (2026-08-16)
 
 ### 🐛 Bug Fixes
