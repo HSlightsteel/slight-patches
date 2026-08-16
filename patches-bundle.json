@@ -1,7 +1,7 @@
 {
-  "created_at": "2026-08-16T08:24:53",
-  "description": "## [1.1.0-dev.1](https://github.com/HSlightsteel/slight-patches/compare/v1.0.0...v1.1.0-dev.1) (2026-08-16)\n\n### ✨ New Features\n\n* add Sparkle TV v2.3.1 Plus unlock patch ([a7b1822](https://github.com/HSlightsteel/slight-patches/commit/a7b18226c830d04c13ca21acb72938d6fea352ad))",
-  "download_url": "https://github.com/HSlightsteel/slight-patches/releases/download/v1.1.0-dev.1/patches-1.1.0-dev.1.mpp",
+  "created_at": "2026-08-16T08:46:30",
+  "description": "## [1.1.0-dev.2](https://github.com/HSlightsteel/slight-patches/compare/v1.1.0-dev.1...v1.1.0-dev.2) (2026-08-16)\n\n### 🐛 Bug Fixes\n\n* **sparkle:** resolve player engine stall and live playback freeze by distributing sync_internal as 0xFF ([55bc34d](https://github.com/HSlightsteel/slight-patches/commit/55bc34d3e1c3545b045382fba9110011284c643a))",
+  "download_url": "https://github.com/HSlightsteel/slight-patches/releases/download/v1.1.0-dev.2/patches-1.1.0-dev.2.mpp",
   "signature_download_url": "",
-  "version": "1.1.0-dev.1"
+  "version": "1.1.0-dev.2"
 }

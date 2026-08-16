@@ -1,3 +1,9 @@
+## [1.1.0-dev.2](https://github.com/HSlightsteel/slight-patches/compare/v1.1.0-dev.1...v1.1.0-dev.2) (2026-08-16)
+
+### 🐛 Bug Fixes
+
+* **sparkle:** resolve player engine stall and live playback freeze by distributing sync_internal as 0xFF ([55bc34d](https://github.com/HSlightsteel/slight-patches/commit/55bc34d3e1c3545b045382fba9110011284c643a))
+
 ## [1.1.0-dev.1](https://github.com/HSlightsteel/slight-patches/compare/v1.0.0...v1.1.0-dev.1) (2026-08-16)
 
 ### ✨ New Features
