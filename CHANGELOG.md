@@ -1,3 +1,9 @@
+## [1.1.0-dev.5](https://github.com/HSlightsteel/slight-patches/compare/v1.1.0-dev.4...v1.1.0-dev.5) (2026-08-16)
+
+### 🐛 Bug Fixes
+
+* **sparkle:** restore MainActivity.H trigger by removing qh.d neutering to fix black screen ([01f97e2](https://github.com/HSlightsteel/slight-patches/commit/01f97e28b8c52e6eb5bb0f291c27bde1cb475358))
+
 ## [1.1.0-dev.4](https://github.com/HSlightsteel/slight-patches/compare/v1.1.0-dev.3...v1.1.0-dev.4) (2026-08-16)
 
 ### 🐛 Bug Fixes

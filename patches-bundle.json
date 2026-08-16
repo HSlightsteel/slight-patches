@@ -1,7 +1,7 @@
 {
-  "created_at": "2026-08-16T09:05:30",
-  "description": "## [1.1.0-dev.4](https://github.com/HSlightsteel/slight-patches/compare/v1.1.0-dev.3...v1.1.0-dev.4) (2026-08-16)\n\n### 🐛 Bug Fixes\n\n* **sparkle:** resolve app crash at launch by removing invalid register injection and safely neutralizing qh.d billing queries ([697f7b5](https://github.com/HSlightsteel/slight-patches/commit/697f7b53158ab6b42fb31f8ed41660fde661294e))",
-  "download_url": "https://github.com/HSlightsteel/slight-patches/releases/download/v1.1.0-dev.4/patches-1.1.0-dev.4.mpp",
+  "created_at": "2026-08-16T09:11:17",
+  "description": "## [1.1.0-dev.5](https://github.com/HSlightsteel/slight-patches/compare/v1.1.0-dev.4...v1.1.0-dev.5) (2026-08-16)\n\n### 🐛 Bug Fixes\n\n* **sparkle:** restore MainActivity.H trigger by removing qh.d neutering to fix black screen ([01f97e2](https://github.com/HSlightsteel/slight-patches/commit/01f97e28b8c52e6eb5bb0f291c27bde1cb475358))",
+  "download_url": "https://github.com/HSlightsteel/slight-patches/releases/download/v1.1.0-dev.5/patches-1.1.0-dev.5.mpp",
   "signature_download_url": "",
-  "version": "1.1.0-dev.4"
+  "version": "1.1.0-dev.5"
 }
