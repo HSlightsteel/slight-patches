@@ -93,29 +93,12 @@ val unlockPlusPatch = bytecodePatch(
             """,
         )
 
-        // LibUtils.x(MainActivity) -> void: Seeds valid startup_time (0L) in SharedPreferences.
-        // If startup_time is uninitialized or not a multiple of 10 (% 10 != 0), TaskReceiver and
-        // SetupActivity trigger anti-tamper routines that periodically wipe database/channel files and
-        // launch background setup intents, causing constant crashes during playback.
+        // LibUtils.x(MainActivity) -> void: Neutralize startup APK signature check.
         mutableLibUtils.methods.firstOrNull { method: Method ->
             method.name == "x" &&
                 method.returnType == "V" &&
                 AccessFlags.STATIC.isSet(method.accessFlags)
-        }?.addInstructions(
-            0,
-            """
-                invoke-static {p0}, Landroid/preference/PreferenceManager;->getDefaultSharedPreferences(Landroid/content/Context;)Landroid/content/SharedPreferences;
-                move-result-object v0
-                invoke-interface {v0}, Landroid/content/SharedPreferences;->edit()Landroid/content/SharedPreferences${'$'}Editor;
-                move-result-object v0
-                const-string v1, "startup_time"
-                const-wide/16 v2, 0x0
-                invoke-interface {v0, v1, v2, v3}, Landroid/content/SharedPreferences${'$'}Editor;->putLong(Ljava/lang/String;J)Landroid/content/SharedPreferences${'$'}Editor;
-                move-result-object v0
-                invoke-interface {v0}, Landroid/content/SharedPreferences${'$'}Editor;->apply()V
-                return-void
-            """,
-        )
+        }?.addInstructions(0, "return-void")
 
         // LibUtils.w() -> boolean (neutralize anti-debug check)
         mutableLibUtils.methods.firstOrNull { method: Method ->
@@ -200,30 +183,28 @@ val unlockPlusPatch = bytecodePatch(
             )
         }
 
-        // 4. Initialize startup_time in BaseApplication.onCreate().
-        // Ensures startup_time (0L) is saved before any background receiver (e.g. TaskReceiver) or
-        // service can execute, preventing uninitialized -1L modulo traps on cold start or boot.
-        val baseApplication = mutableClassDefByOrNull("Lse/hedekonsult/tvlibrary/core/common/BaseApplication;")
-            ?: classDefByStrings("allow_incompatible")
-                .firstOrNull()
-                ?.let { mutableClassDefBy(it) }
-        baseApplication?.methods?.firstOrNull { method: Method ->
-            method.name == "onCreate" &&
-                method.returnType == "V" &&
-                method.parameterTypes.isEmpty()
-        }?.addInstructions(
-            0,
-            """
-                invoke-static {p0}, Landroid/preference/PreferenceManager;->getDefaultSharedPreferences(Landroid/content/Context;)Landroid/content/SharedPreferences;
-                move-result-object v0
-                invoke-interface {v0}, Landroid/content/SharedPreferences;->edit()Landroid/content/SharedPreferences${'$'}Editor;
-                move-result-object v0
-                const-string v1, "startup_time"
-                const-wide/16 v2, 0x0
-                invoke-interface {v0, v1, v2, v3}, Landroid/content/SharedPreferences${'$'}Editor;->putLong(Ljava/lang/String;J)Landroid/content/SharedPreferences${'$'}Editor;
-                move-result-object v0
-                invoke-interface {v0}, Landroid/content/SharedPreferences${'$'}Editor;->apply()V
-            """,
-        )
+        // 4. Neutralize background Google Play Billing & Firebase queries in qh.d.
+        // MainActivity.onResume initializes qh.d which continuously queries BillingClient and Firebase
+        // in background threads. On modified APKs or devices without Play Store services, this triggers
+        // billing disconnections and background worker crashes. Neutering i(Context) and f(String, String)
+        // prevents all billing crash loops while MainActivity.H distributes 0xFF directly.
+        val billingManagerClass = classDefByStrings("Pending purchases for one-time products must be supported.")
+            .firstOrNull()
+            ?: mutableClassDefByOrNull("Lqh/d;")
+
+        if (billingManagerClass != null) {
+            val mutableBillingManager = mutableClassDefBy(billingManagerClass)
+            mutableBillingManager.methods.firstOrNull { method: Method ->
+                method.name == "i" &&
+                    method.returnType == "V" &&
+                    method.parameterTypes == listOf("Landroid/content/Context;")
+            }?.addInstructions(0, "return-void")
+
+            mutableBillingManager.methods.firstOrNull { method: Method ->
+                method.name == "f" &&
+                    method.returnType == "V" &&
+                    method.parameterTypes == listOf("Ljava/lang/String;", "Ljava/lang/String;")
+            }?.addInstructions(0, "return-void")
+        }
     }
 }
