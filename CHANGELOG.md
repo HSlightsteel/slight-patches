@@ -1,3 +1,9 @@
+## [1.1.0-dev.7](https://github.com/HSlightsteel/slight-patches/compare/v1.1.0-dev.6...v1.1.0-dev.7) (2026-08-16)
+
+### 🐛 Bug Fixes
+
+* **sparkle:** resolve launch crash and modulo-10 anti-tamper sabotage ([aaf448b](https://github.com/HSlightsteel/slight-patches/commit/aaf448bfb401542b75a2042b9c29a264e1cc4703))
+
 ## [1.1.0-dev.6](https://github.com/HSlightsteel/slight-patches/compare/v1.1.0-dev.5...v1.1.0-dev.6) (2026-08-16)
 
 ### 🐛 Bug Fixes
